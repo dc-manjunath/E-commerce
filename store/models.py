@@ -1,5 +1,11 @@
 from django.db import models
 
+class Promotion(models.Model):
+    description = models.CharField(max_length=255)
+    discount = models.FloatField()
+
+class Collection(models.Model):
+    title = models.CharField(max_length=255)
 
 class Product(models.Model):
     
@@ -9,6 +15,8 @@ class Product(models.Model):
     price = models.DecimalField(max_digits=6, decimal_places= 2)
     inventory = models.IntegerField()
     last_update =  models.DateTimeField(auto_now=True)
+    Collection = models.ForeignKey(Collection, on_delete=models.CASCADE)
+    promotions = models.ManyToManyField(Promotion)
 
 class Coustomer(models.Model): 
     MEMBERSHIP_BRONZE = 'B'
@@ -27,6 +35,11 @@ class Coustomer(models.Model):
     birth_date = models.DateField(null =  True)
     membership_choices = (models.CharField(max_length=1, choices = MEMBERSHIP_CHOICES, default  = MEMBERSHIP_BRONZE))
     
+class Address(models.Model):
+    street = models.CharField(max_length=225)
+    city  = models.CharField(max_length=225)
+    Coustomer = models.OneToOneField(Coustomer, on_delete=models.CASCADE, primary_key = True)
+
 class Order(models.Model):
     PAYMENT_STATUS_PENDING = 'P'
     PAYMENT_STATUS_COMPLETE = 'C'
@@ -39,3 +52,18 @@ class Order(models.Model):
 
     placed_at = models.DateTimeField(auto_now_add=True)
     payment_status = models.CharField(max_length=1, choices = PAYMENT_STATUS_CHOICES, default=PAYMENT_STATUS_PENDING)
+    Coustomer = models.ForeignKey(Coustomer, on_delete=models.PROTECT)
+
+class OrderItem(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.PROTECT)
+    product = models.ForeignKey(Product, on_delete=models.PROTECT)
+    quantity = models.PositiveIntegerField()
+    unit_price = models.DecimalField(max_digits=6, decimal_places = 2)
+
+class Cart(models.Model):
+    created_at  = models.DateTimeField(auto_now_add = True)
+
+class CartItem(models.Model):
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
+    Product = models.ForeignKey(Product,on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField()
